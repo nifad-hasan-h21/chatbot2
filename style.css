@@ -765,3 +765,14 @@ body {
         gap: 10px;
     }
 } /* Added the missing closing brace here */
+
+/* Add this to your style.css file */
+.talk-btn.listening {
+    background: rgba(255, 0, 60, 0.2) !important;
+    box-shadow: 0 0 15px var(--accent-color) !important;
+}
+
+.talk-btn.listening i {
+    color: var(--accent-color) !important;
+    text-shadow: 0 0 10px var(--accent-color) !important;
+}

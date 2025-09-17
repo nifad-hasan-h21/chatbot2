@@ -90,18 +90,10 @@ function init() {
 // Update date and time in HUD
 function updateDateTime() {
     const now = new Date();
-    
-    // Update time
     const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    if (currentTimeElement) {
-        currentTimeElement.textContent = time;
-    }
-    
-    // Update date
+    if (currentTimeElement) currentTimeElement.textContent = time;
     const date = now.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-    if (currentDateElement) {
-        currentDateElement.textContent = date;
-    }
+    if (currentDateElement) currentDateElement.textContent = date;
 }
 
 // Show microphone error message
@@ -117,7 +109,6 @@ function showMicrophoneError() {
 // Set up speech recognition
 function setupSpeechRecognition() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    
     if (!SpeechRecognition) {
         addToHistory('SYSTEM', 'Speech recognition is not supported in this browser.');
         talkBtn.disabled = true;
@@ -141,8 +132,6 @@ function setupSpeechRecognition() {
     recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript.trim().toLowerCase();
         console.log('Heard:', transcript);
-        
-        // Check for activation keyword
         if (transcript.includes(activationKeyword) || isAwake) {
             if (transcript.includes(activationKeyword)) {
                 isAwake = true;
@@ -156,7 +145,6 @@ function setupSpeechRecognition() {
                 handleCommand(transcript);
             }
         }
-        
         recognition.stop();
     };
     
@@ -173,7 +161,6 @@ function setupSpeechRecognition() {
         talkBtn.innerHTML = '<i class="fas fa-microphone-alt"></i>';
         talkBtn.classList.remove('listening');
         listeningAnimation.style.display = 'none';
-        
         if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
             showMicrophoneError();
         }
@@ -184,31 +171,23 @@ function setupSpeechRecognition() {
 function setupSpeechSynthesis() {
     if (!speechSynthesis) {
         addToHistory('SYSTEM', 'Speech synthesis is not supported in this browser.');
-        return;
     }
 }
 
 // Populate voice selection dropdown
 function populateVoices() {
     if (!speechSynthesis) return;
-    
     const voices = speechSynthesis.getVoices();
     voiceSelect.innerHTML = '';
-    
-    // Add default option
     const defaultOption = document.createElement('option');
     defaultOption.value = 'default';
     defaultOption.textContent = 'DEFAULT VOICE';
     voiceSelect.appendChild(defaultOption);
-    
-    // Add available voices
     voices.forEach(voice => {
         const option = document.createElement('option');
         option.value = voice.name;
         option.textContent = `${voice.name} (${voice.lang})`;
-        if (voice.default) {
-            option.selected = true;
-        }
+        if (voice.default) option.selected = true;
         voiceSelect.appendChild(option);
     });
 }
@@ -216,23 +195,20 @@ function populateVoices() {
 // Toggle listening state
 function toggleListening() {
     if (isMicrophoneBlocked) {
-        // Guide user to enable microphone
         speak("Please enable microphone permissions in your browser settings to use voice commands.");
         addToHistory('SYSTEM', 'Microphone access is blocked. Guide user to enable permissions.');
         return;
     }
-    
     if (!recognition) {
         speak("Speech recognition is not available in your browser.");
         return;
     }
-    
     if (isListening) {
         recognition.stop();
     } else {
         try {
             recognition.start();
-            isAwake = true; // Assume awake when manually activating
+            isAwake = true;
         } catch (error) {
             console.error('Error starting recognition:', error);
             speak("I'm having trouble accessing the microphone. Please check your permissions.");
@@ -243,66 +219,54 @@ function toggleListening() {
 // Handle voice commands
 function handleCommand(command) {
     if (!command) return;
-    
     addToHistory('USER', command);
-    
-    // Convert command to lowercase for easier matching
     const lowerCommand = command.toLowerCase();
     
-    // Process commands
-    if (lowerCommand.includes('time') || lowerCommand.includes('what time')) {
+    if (lowerCommand.includes('time')) {
         const now = new Date();
         const time = now.toLocaleTimeString();
         speak(`The current time is ${time}`);
         addToHistory('JARVIS', `The current time is ${time}`);
     } 
-    else if (lowerCommand.includes('date') || lowerCommand.includes('what date') || lowerCommand.includes("what's the date")) {
+    else if (lowerCommand.includes('date')) {
         const now = new Date();
         const date = now.toLocaleDateString();
         speak(`Today's date is ${date}`);
         addToHistory('JARVIS', `Today's date is ${date}`);
     }
-    else if (lowerCommand.includes('open google') || lowerCommand.includes('launch google')) {
+    else if (lowerCommand.includes('open google')) {
         speak("Opening Google");
-        setTimeout(() => {
-            window.open('https://www.google.com', '_blank');
-        }, 1000);
+        window.open('https://www.google.com', '_blank');
         addToHistory('JARVIS', 'Opening Google');
     }
-    else if (lowerCommand.includes('open youtube') || lowerCommand.includes('launch youtube')) {
+    else if (lowerCommand.includes('open youtube')) {
         speak("Opening YouTube");
-        setTimeout(() => {
-            window.open('https://www.youtube.com', '_blank');
-        }, 1000);
+        window.open('https://www.youtube.com', '_blank');
         addToHistory('JARVIS', 'Opening YouTube');
     }
-    else if (lowerCommand.includes('open facebook') || lowerCommand.includes('launch facebook')) {
+    else if (lowerCommand.includes('open facebook')) {
         speak("Opening Facebook");
-        setTimeout(() => {
-            window.open('https://www.facebook.com', '_blank');
-        }, 1000);
+        window.open('https://www.facebook.com', '_blank');
         addToHistory('JARVIS', 'Opening Facebook');
     }
-    else if (lowerCommand.includes('open wikipedia') || lowerCommand.includes('launch wikipedia')) {
+    else if (lowerCommand.includes('open wikipedia')) {
         speak("Opening Wikipedia");
-        setTimeout(() => {
-            window.open('https://www.wikipedia.org', '_blank');
-        }, 1000);
+        window.open('https://www.wikipedia.org', '_blank');
         addToHistory('JARVIS', 'Opening Wikipedia');
     }
     else if (lowerCommand.includes('search for')) {
-        const query = command.split('for')[1].trim();
-        speak(`Searching for ${query}`);
-        setTimeout(() => {
+        const query = command.split('for')[1]?.trim() || '';
+        if (query) {
+            speak(`Searching for ${query}`);
             window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
-        }, 1000);
-        addToHistory('JARVIS', `Searching for ${query}`);
+            addToHistory('JARVIS', `Searching for ${query}`);
+        } else {
+            speak("What would you like me to search for?");
+        }
     }
-    else if (lowerCommand.includes('open calculator') || lowerCommand.includes('launch calculator')) {
+    else if (lowerCommand.includes('open calculator')) {
         speak("Opening calculator");
-        setTimeout(() => {
-            window.open('https://www.google.com/search?q=calculator', '_blank');
-        }, 1000);
+        window.open('https://www.google.com/search?q=calculator', '_blank');
         addToHistory('JARVIS', 'Opening calculator');
     }
     else if (lowerCommand.includes('clear history')) {
@@ -313,19 +277,17 @@ function handleCommand(command) {
         historyList.appendChild(systemItem);
         speak("History cleared, Sir.");
     }
-    else if (lowerCommand.includes('go to sleep') || lowerCommand.includes('sleep')) {
+    else if (lowerCommand.includes('go to sleep')) {
         speak("Going to sleep. Say 'Hey Jarvis' to wake me up.");
         isAwake = false;
         addToHistory('JARVIS', 'Going to sleep');
     }
     else if (lowerCommand.includes('play music')) {
         speak("Playing music");
-        setTimeout(() => {
-            window.open('https://www.youtube.com/watch?v=jNQXAC9IVRw', '_blank');
-        }, 1000);
+        window.open('https://www.youtube.com/watch?v=jNQXAC9IVRw', '_blank');
         addToHistory('JARVIS', 'Playing music');
     }
-    else if (lowerCommand.includes('tell me a joke') || lowerCommand.includes('joke')) {
+    else if (lowerCommand.includes('joke')) {
         const jokes = [
             "Why don't scientists trust atoms? Because they make up everything!",
             "Why did the scarecrow win an award? Because he was outstanding in his field!",
@@ -337,21 +299,17 @@ function handleCommand(command) {
         speak(joke);
         addToHistory('JARVIS', joke);
     }
-    else if (lowerCommand.includes('weather') || lowerCommand.includes('weather forecast')) {
+    else if (lowerCommand.includes('weather')) {
         speak("Checking weather forecast");
-        setTimeout(() => {
-            window.open('https://www.google.com/search?q=weather', '_blank');
-        }, 1000);
+        window.open('https://www.google.com/search?q=weather', '_blank');
         addToHistory('JARVIS', 'Checking weather forecast');
     }
-    else if (lowerCommand.includes('news') || lowerCommand.includes('news updates')) {
+    else if (lowerCommand.includes('news')) {
         speak("Getting news updates");
-        setTimeout(() => {
-            window.open('https://news.google.com', '_blank');
-        }, 1000);
+        window.open('https://news.google.com', '_blank');
         addToHistory('JARVIS', 'Getting news updates');
     }
-    else if (lowerCommand.includes('create note') || lowerCommand.includes('make a note')) {
+    else if (lowerCommand.includes('create note')) {
         speak("Creating a note");
         const note = prompt("What would you like to note down?");
         if (note) {
@@ -404,7 +362,6 @@ function handleCommand(command) {
 // Add item to command history
 function addToHistory(type, content) {
     const item = document.createElement('li');
-    
     if (type === 'USER') {
         item.className = 'history-item user';
         item.innerHTML = `<span class="user-command"><i class="fas fa-user"></i> USER: ${content}</span>`;
@@ -420,7 +377,6 @@ function addToHistory(type, content) {
         item.className = 'history-item system';
         item.innerHTML = `<span class="user-command"><i class="fas fa-server"></i> SYSTEM: ${content}</span>`;
     }
-    
     historyList.appendChild(item);
     historyList.scrollTop = historyList.scrollHeight;
 }
@@ -431,34 +387,22 @@ function speak(text) {
         console.log("Speech synthesis not available:", text);
         return;
     }
-    
-    // Cancel any ongoing speech
     speechSynthesis.cancel();
-    
     const utterance = new SpeechSynthesisUtterance(text);
-    
-    // Apply settings
     utterance.rate = parseFloat(speechRate.value) || 1;
     utterance.pitch = parseFloat(speechPitch.value) || 1;
-    
-    // Select voice if available
     const voices = speechSynthesis.getVoices();
     if (voices.length > 0 && voiceSelect.value !== 'default') {
         utterance.voice = voices.find(voice => voice.name === voiceSelect.value) || voices[0];
     }
-    
     utterance.onend = () => {
         if (autoListen.checked && isAwake && recognition) {
             setTimeout(() => {
-                try {
-                    recognition.start();
-                } catch (error) {
-                    console.error('Error restarting recognition after speech:', error);
-                }
+                try { recognition.start(); } 
+                catch (error) { console.error('Error restarting recognition after speech:', error); }
             }, 500);
         }
     };
-    
     try {
         speechSynthesis.speak(utterance);
         lastSpokenText = text;
@@ -467,17 +411,16 @@ function speak(text) {
     }
 }
 
-// Load settings from localStorage
+// Load settings
 function loadSettings() {
     const settings = JSON.parse(localStorage.getItem('jarvisSettings')) || {};
-    
     if (speechRate) speechRate.value = settings.speechRate || 1;
     if (speechPitch) speechPitch.value = settings.speechPitch || 1;
     if (autoListen) autoListen.checked = settings.autoListen !== undefined ? settings.autoListen : true;
     if (saveHistory) saveHistory.checked = settings.saveHistory !== undefined ? settings.saveHistory : true;
 }
 
-// Save settings to localStorage
+// Save settings
 function saveSettings() {
     const settings = {
         speechRate: parseFloat(speechRate.value),
@@ -485,7 +428,6 @@ function saveSettings() {
         autoListen: autoListen.checked,
         saveHistory: saveHistory.checked
     };
-    
     localStorage.setItem('jarvisSettings', JSON.stringify(settings));
 }
 
@@ -495,7 +437,6 @@ window.addEventListener('load', init);
 // Fallback for speech recognition errors
 window.addEventListener('click', function() {
     if (isMicrophoneBlocked) {
-        // Try to reinitialize recognition on user interaction
         try {
             setupSpeechRecognition();
             isMicrophoneBlocked = false;

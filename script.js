@@ -264,34 +264,45 @@ function handleCommand(command) {
     }
     else if (lowerCommand.includes('open google') || lowerCommand.includes('launch google')) {
         speak("Opening Google");
-        window.open('https://www.google.com', '_blank');
+        setTimeout(() => {
+            window.open('https://www.google.com', '_blank');
+        }, 1000);
         addToHistory('JARVIS', 'Opening Google');
     }
     else if (lowerCommand.includes('open youtube') || lowerCommand.includes('launch youtube')) {
         speak("Opening YouTube");
-        window.open('https://www.youtube.com', '_blank');
+        setTimeout(() => {
+            window.open('https://www.youtube.com', '_blank');
+        }, 1000);
         addToHistory('JARVIS', 'Opening YouTube');
     }
     else if (lowerCommand.includes('open facebook') || lowerCommand.includes('launch facebook')) {
         speak("Opening Facebook");
-        window.open('https://www.facebook.com', '_blank');
+        setTimeout(() => {
+            window.open('https://www.facebook.com', '_blank');
+        }, 1000);
         addToHistory('JARVIS', 'Opening Facebook');
     }
     else if (lowerCommand.includes('open wikipedia') || lowerCommand.includes('launch wikipedia')) {
         speak("Opening Wikipedia");
-        window.open('https://www.wikipedia.org', '_blank');
+        setTimeout(() => {
+            window.open('https://www.wikipedia.org', '_blank');
+        }, 1000);
         addToHistory('JARVIS', 'Opening Wikipedia');
     }
     else if (lowerCommand.includes('search for')) {
         const query = command.split('for')[1].trim();
         speak(`Searching for ${query}`);
-        window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+        setTimeout(() => {
+            window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+        }, 1000);
         addToHistory('JARVIS', `Searching for ${query}`);
     }
     else if (lowerCommand.includes('open calculator') || lowerCommand.includes('launch calculator')) {
         speak("Opening calculator");
-        // For a real implementation, you would open a calculator app or web app
-        window.open('https://www.google.com/search?q=calculator', '_blank');
+        setTimeout(() => {
+            window.open('https://www.google.com/search?q=calculator', '_blank');
+        }, 1000);
         addToHistory('JARVIS', 'Opening calculator');
     }
     else if (lowerCommand.includes('clear history')) {
@@ -309,8 +320,9 @@ function handleCommand(command) {
     }
     else if (lowerCommand.includes('play music')) {
         speak("Playing music");
-        // For a real implementation, you would integrate with a music service
-        window.open('https://www.youtube.com/watch?v=jNQXAC9IVRw', '_blank'); // Example: Rick Astley
+        setTimeout(() => {
+            window.open('https://www.youtube.com/watch?v=jNQXAC9IVRw', '_blank');
+        }, 1000);
         addToHistory('JARVIS', 'Playing music');
     }
     else if (lowerCommand.includes('tell me a joke') || lowerCommand.includes('joke')) {
@@ -327,18 +339,20 @@ function handleCommand(command) {
     }
     else if (lowerCommand.includes('weather') || lowerCommand.includes('weather forecast')) {
         speak("Checking weather forecast");
-        // For a real implementation, you would use a weather API
-        window.open('https://www.google.com/search?q=weather', '_blank');
+        setTimeout(() => {
+            window.open('https://www.google.com/search?q=weather', '_blank');
+        }, 1000);
         addToHistory('JARVIS', 'Checking weather forecast');
     }
     else if (lowerCommand.includes('news') || lowerCommand.includes('news updates')) {
         speak("Getting news updates");
-        window.open('https://news.google.com', '_blank');
+        setTimeout(() => {
+            window.open('https://news.google.com', '_blank');
+        }, 1000);
         addToHistory('JARVIS', 'Getting news updates');
     }
     else if (lowerCommand.includes('create note') || lowerCommand.includes('make a note')) {
         speak("Creating a note");
-        // For a real implementation, you would integrate with a notes app
         const note = prompt("What would you like to note down?");
         if (note) {
             speak(`Note created: ${note}`);
@@ -347,7 +361,6 @@ function handleCommand(command) {
     }
     else if (lowerCommand.includes('set alarm')) {
         speak("Setting an alarm");
-        // For a real implementation, you would create an alarm system
         const time = prompt("What time should I set the alarm for?");
         if (time) {
             speak(`Alarm set for ${time}`);
@@ -356,7 +369,6 @@ function handleCommand(command) {
     }
     else if (lowerCommand.includes('set timer')) {
         speak("Setting a timer");
-        // For a real implementation, you would create a timer system
         const duration = prompt("How long should the timer be? (e.g., 5 minutes)");
         if (duration) {
             speak(`Timer set for ${duration}`);
@@ -365,7 +377,6 @@ function handleCommand(command) {
     }
     else if (lowerCommand.includes('add to calendar')) {
         speak("Adding to calendar");
-        // For a real implementation, you would integrate with a calendar service
         const event = prompt("What event would you like to add to the calendar?");
         if (event) {
             speak(`Added ${event} to calendar`);

@@ -1,4 +1,6 @@
 // script.js - JARVIS Virtual Assistant
+console.log('JARVIS script loaded successfully');
+
 // DOM Elements
 const talkBtn = document.getElementById('talkBtn');
 const commandInput = document.getElementById('commandInput');
@@ -24,9 +26,11 @@ let speechSynthesis = window.speechSynthesis;
 let recognition;
 let activationKeyword = "hey jarvis";
 let isAwake = false;
+let isMicrophoneBlocked = false;
 
 // Initialize the app
 function init() {
+    console.log('Initializing JARVIS...');
     loadSettings();
     setupSpeechRecognition();
     setupSpeechSynthesis();
@@ -72,7 +76,9 @@ function init() {
     });
     
     // Populate voices when they are loaded
-    speechSynthesis.onvoiceschanged = populateVoices;
+    if (speechSynthesis) {
+        speechSynthesis.onvoiceschanged = populateVoices;
+    }
     
     // Initial greeting
     setTimeout(() => {
@@ -87,11 +93,25 @@ function updateDateTime() {
     
     // Update time
     const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    currentTimeElement.textContent = time;
+    if (currentTimeElement) {
+        currentTimeElement.textContent = time;
+    }
     
     // Update date
     const date = now.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-    currentDateElement.textContent = date;
+    if (currentDateElement) {
+        currentDateElement.textContent = date;
+    }
+}
+
+// Show microphone error message
+function showMicrophoneError() {
+    addToHistory('SYSTEM', 'Microphone access is blocked. Please allow microphone permissions in your browser settings.');
+    speak("Microphone access is blocked. Please allow microphone permissions to use voice commands.");
+    isMicrophoneBlocked = true;
+    talkBtn.disabled = true;
+    talkBtn.title = "Microphone access blocked - click to enable";
+    talkBtn.style.opacity = "0.5";
 }
 
 // Set up speech recognition
@@ -100,8 +120,9 @@ function setupSpeechRecognition() {
     
     if (!SpeechRecognition) {
         addToHistory('SYSTEM', 'Speech recognition is not supported in this browser.');
-        speak('Speech recognition is not supported in this browser.');
         talkBtn.disabled = true;
+        talkBtn.title = "Speech recognition not supported";
+        talkBtn.style.opacity = "0.5";
         return null;
     }
     
@@ -150,8 +171,8 @@ function setupSpeechRecognition() {
         talkBtn.innerHTML = '<i class="fas fa-microphone-alt"></i>';
         listeningAnimation.style.display = 'none';
         
-        if (event.error === 'not-allowed') {
-            speak("Microphone access is not allowed. Please enable microphone permissions.");
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+            showMicrophoneError();
         }
     };
 }
@@ -171,6 +192,13 @@ function populateVoices() {
     const voices = speechSynthesis.getVoices();
     voiceSelect.innerHTML = '';
     
+    // Add default option
+    const defaultOption = document.createElement('option');
+    defaultOption.value = 'default';
+    defaultOption.textContent = 'DEFAULT VOICE';
+    voiceSelect.appendChild(defaultOption);
+    
+    // Add available voices
     voices.forEach(voice => {
         const option = document.createElement('option');
         option.value = voice.name;
@@ -184,10 +212,28 @@ function populateVoices() {
 
 // Toggle listening state
 function toggleListening() {
+    if (isMicrophoneBlocked) {
+        // Guide user to enable microphone
+        speak("Please enable microphone permissions in your browser settings to use voice commands.");
+        addToHistory('SYSTEM', 'Microphone access is blocked. Guide user to enable permissions.');
+        return;
+    }
+    
+    if (!recognition) {
+        speak("Speech recognition is not available in your browser.");
+        return;
+    }
+    
     if (isListening) {
         recognition.stop();
     } else {
-        recognition.start();
+        try {
+            recognition.start();
+            isAwake = true; // Assume awake when manually activating
+        } catch (error) {
+            console.error('Error starting recognition:', error);
+            speak("I'm having trouble accessing the microphone. Please check your permissions.");
+        }
     }
 }
 
@@ -256,6 +302,18 @@ function handleCommand(command) {
         isAwake = false;
         addToHistory('JARVIS', 'Going to sleep');
     }
+    else if (lowerCommand.includes('hello') || lowerCommand.includes('hi')) {
+        speak("Hello Sir. How may I assist you today?");
+        addToHistory('JARVIS', 'Hello Sir. How may I assist you today?');
+    }
+    else if (lowerCommand.includes('thank')) {
+        speak("You're welcome, Sir. Is there anything else I can help with?");
+        addToHistory('JARVIS', "You're welcome, Sir. Is there anything else I can help with?");
+    }
+    else if (lowerCommand.includes('who are you')) {
+        speak("I am JARVIS, Just A Rather Very Intelligent System. Your personal assistant.");
+        addToHistory('JARVIS', "I am JARVIS, Just A Rather Very Intelligent System. Your personal assistant.");
+    }
     else {
         speak("I'm sorry, I don't understand that command yet.");
         addToHistory('JARVIS', "I'm sorry, I don't understand that command yet.");
@@ -288,7 +346,10 @@ function addToHistory(type, content) {
 
 // Speak text using speech synthesis
 function speak(text) {
-    if (!speechSynthesis) return;
+    if (!speechSynthesis) {
+        console.log("Speech synthesis not available:", text);
+        return;
+    }
     
     // Cancel any ongoing speech
     speechSynthesis.cancel();
@@ -296,36 +357,43 @@ function speak(text) {
     const utterance = new SpeechSynthesisUtterance(text);
     
     // Apply settings
-    utterance.rate = parseFloat(speechRate.value);
-    utterance.pitch = parseFloat(speechPitch.value);
+    utterance.rate = parseFloat(speechRate.value) || 1;
+    utterance.pitch = parseFloat(speechPitch.value) || 1;
     
     // Select voice if available
     const voices = speechSynthesis.getVoices();
-    if (voices.length > 0) {
-        const selectedVoice = voiceSelect.value;
-        if (selectedVoice !== 'default') {
-            utterance.voice = voices.find(voice => voice.name === selectedVoice) || voices[0];
-        }
+    if (voices.length > 0 && voiceSelect.value !== 'default') {
+        utterance.voice = voices.find(voice => voice.name === voiceSelect.value) || voices[0];
     }
     
     utterance.onend = () => {
-        if (autoListen.checked && isAwake) {
-            setTimeout(() => recognition.start(), 500);
+        if (autoListen.checked && isAwake && recognition) {
+            setTimeout(() => {
+                try {
+                    recognition.start();
+                } catch (error) {
+                    console.error('Error restarting recognition after speech:', error);
+                }
+            }, 500);
         }
     };
     
-    speechSynthesis.speak(utterance);
-    lastSpokenText = text;
+    try {
+        speechSynthesis.speak(utterance);
+        lastSpokenText = text;
+    } catch (error) {
+        console.error('Error with speech synthesis:', error);
+    }
 }
 
 // Load settings from localStorage
 function loadSettings() {
     const settings = JSON.parse(localStorage.getItem('jarvisSettings')) || {};
     
-    speechRate.value = settings.speechRate || 1;
-    speechPitch.value = settings.speechPitch || 1;
-    autoListen.checked = settings.autoListen !== undefined ? settings.autoListen : true;
-    saveHistory.checked = settings.saveHistory !== undefined ? settings.saveHistory : true;
+    if (speechRate) speechRate.value = settings.speechRate || 1;
+    if (speechPitch) speechPitch.value = settings.speechPitch || 1;
+    if (autoListen) autoListen.checked = settings.autoListen !== undefined ? settings.autoListen : true;
+    if (saveHistory) saveHistory.checked = settings.saveHistory !== undefined ? settings.saveHistory : true;
 }
 
 // Save settings to localStorage
@@ -342,3 +410,20 @@ function saveSettings() {
 
 // Initialize the app when the window loads
 window.addEventListener('load', init);
+
+// Fallback for speech recognition errors
+window.addEventListener('click', function() {
+    if (isMicrophoneBlocked) {
+        // Try to reinitialize recognition on user interaction
+        try {
+            setupSpeechRecognition();
+            isMicrophoneBlocked = false;
+            talkBtn.disabled = false;
+            talkBtn.style.opacity = "1";
+            talkBtn.title = "";
+            addToHistory('SYSTEM', 'Microphone access reinitialized. Please try again.');
+        } catch (error) {
+            console.error('Failed to reinitialize recognition:', error);
+        }
+    }
+});

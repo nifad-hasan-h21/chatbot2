@@ -134,6 +134,7 @@ function setupSpeechRecognition() {
     recognition.onstart = () => {
         isListening = true;
         talkBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+        talkBtn.classList.add('listening');
         listeningAnimation.style.display = 'block';
     };
     
@@ -162,6 +163,7 @@ function setupSpeechRecognition() {
     recognition.onend = () => {
         isListening = false;
         talkBtn.innerHTML = '<i class="fas fa-microphone-alt"></i>';
+        talkBtn.classList.remove('listening');
         listeningAnimation.style.display = 'none';
     };
     
@@ -169,6 +171,7 @@ function setupSpeechRecognition() {
         console.error('Speech recognition error', event.error);
         isListening = false;
         talkBtn.innerHTML = '<i class="fas fa-microphone-alt"></i>';
+        talkBtn.classList.remove('listening');
         listeningAnimation.style.display = 'none';
         
         if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
@@ -247,45 +250,70 @@ function handleCommand(command) {
     const lowerCommand = command.toLowerCase();
     
     // Process commands
-    if (lowerCommand.includes('time')) {
+    if (lowerCommand.includes('time') || lowerCommand.includes('what time')) {
         const now = new Date();
         const time = now.toLocaleTimeString();
         speak(`The current time is ${time}`);
         addToHistory('JARVIS', `The current time is ${time}`);
     } 
-    else if (lowerCommand.includes('date')) {
+    else if (lowerCommand.includes('date') || lowerCommand.includes('what date') || lowerCommand.includes("what's the date")) {
         const now = new Date();
         const date = now.toLocaleDateString();
         speak(`Today's date is ${date}`);
         addToHistory('JARVIS', `Today's date is ${date}`);
     }
-    else if (lowerCommand.includes('google')) {
+    else if (lowerCommand.includes('open google') || lowerCommand.includes('launch google')) {
         speak("Opening Google");
         window.open('https://www.google.com', '_blank');
         addToHistory('JARVIS', 'Opening Google');
     }
-    else if (lowerCommand.includes('youtube')) {
+    else if (lowerCommand.includes('open youtube') || lowerCommand.includes('launch youtube')) {
         speak("Opening YouTube");
         window.open('https://www.youtube.com', '_blank');
         addToHistory('JARVIS', 'Opening YouTube');
     }
-    else if (lowerCommand.includes('facebook')) {
+    else if (lowerCommand.includes('open facebook') || lowerCommand.includes('launch facebook')) {
         speak("Opening Facebook");
         window.open('https://www.facebook.com', '_blank');
         addToHistory('JARVIS', 'Opening Facebook');
     }
-    else if (lowerCommand.includes('wikipedia')) {
+    else if (lowerCommand.includes('open wikipedia') || lowerCommand.includes('launch wikipedia')) {
         speak("Opening Wikipedia");
         window.open('https://www.wikipedia.org', '_blank');
         addToHistory('JARVIS', 'Opening Wikipedia');
     }
-    else if (lowerCommand.includes('search') && lowerCommand.includes('for')) {
+    else if (lowerCommand.includes('search for')) {
         const query = command.split('for')[1].trim();
         speak(`Searching for ${query}`);
         window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
         addToHistory('JARVIS', `Searching for ${query}`);
     }
-    else if (lowerCommand.includes('joke')) {
+    else if (lowerCommand.includes('open calculator') || lowerCommand.includes('launch calculator')) {
+        speak("Opening calculator");
+        // For a real implementation, you would open a calculator app or web app
+        window.open('https://www.google.com/search?q=calculator', '_blank');
+        addToHistory('JARVIS', 'Opening calculator');
+    }
+    else if (lowerCommand.includes('clear history')) {
+        historyList.innerHTML = '';
+        const systemItem = document.createElement('li');
+        systemItem.className = 'history-item system';
+        systemItem.innerHTML = '<span class="user-command"><i class="fas fa-server"></i> SYSTEM: HISTORY CLEARED</span>';
+        historyList.appendChild(systemItem);
+        speak("History cleared, Sir.");
+    }
+    else if (lowerCommand.includes('go to sleep') || lowerCommand.includes('sleep')) {
+        speak("Going to sleep. Say 'Hey Jarvis' to wake me up.");
+        isAwake = false;
+        addToHistory('JARVIS', 'Going to sleep');
+    }
+    else if (lowerCommand.includes('play music')) {
+        speak("Playing music");
+        // For a real implementation, you would integrate with a music service
+        window.open('https://www.youtube.com/watch?v=jNQXAC9IVRw', '_blank'); // Example: Rick Astley
+        addToHistory('JARVIS', 'Playing music');
+    }
+    else if (lowerCommand.includes('tell me a joke') || lowerCommand.includes('joke')) {
         const jokes = [
             "Why don't scientists trust atoms? Because they make up everything!",
             "Why did the scarecrow win an award? Because he was outstanding in his field!",
@@ -297,10 +325,52 @@ function handleCommand(command) {
         speak(joke);
         addToHistory('JARVIS', joke);
     }
-    else if (lowerCommand.includes('sleep')) {
-        speak("Going to sleep. Say 'Hey Jarvis' to wake me up.");
-        isAwake = false;
-        addToHistory('JARVIS', 'Going to sleep');
+    else if (lowerCommand.includes('weather') || lowerCommand.includes('weather forecast')) {
+        speak("Checking weather forecast");
+        // For a real implementation, you would use a weather API
+        window.open('https://www.google.com/search?q=weather', '_blank');
+        addToHistory('JARVIS', 'Checking weather forecast');
+    }
+    else if (lowerCommand.includes('news') || lowerCommand.includes('news updates')) {
+        speak("Getting news updates");
+        window.open('https://news.google.com', '_blank');
+        addToHistory('JARVIS', 'Getting news updates');
+    }
+    else if (lowerCommand.includes('create note') || lowerCommand.includes('make a note')) {
+        speak("Creating a note");
+        // For a real implementation, you would integrate with a notes app
+        const note = prompt("What would you like to note down?");
+        if (note) {
+            speak(`Note created: ${note}`);
+            addToHistory('JARVIS', `Created note: ${note}`);
+        }
+    }
+    else if (lowerCommand.includes('set alarm')) {
+        speak("Setting an alarm");
+        // For a real implementation, you would create an alarm system
+        const time = prompt("What time should I set the alarm for?");
+        if (time) {
+            speak(`Alarm set for ${time}`);
+            addToHistory('JARVIS', `Alarm set for ${time}`);
+        }
+    }
+    else if (lowerCommand.includes('set timer')) {
+        speak("Setting a timer");
+        // For a real implementation, you would create a timer system
+        const duration = prompt("How long should the timer be? (e.g., 5 minutes)");
+        if (duration) {
+            speak(`Timer set for ${duration}`);
+            addToHistory('JARVIS', `Timer set for ${duration}`);
+        }
+    }
+    else if (lowerCommand.includes('add to calendar')) {
+        speak("Adding to calendar");
+        // For a real implementation, you would integrate with a calendar service
+        const event = prompt("What event would you like to add to the calendar?");
+        if (event) {
+            speak(`Added ${event} to calendar`);
+            addToHistory('JARVIS', `Added ${event} to calendar`);
+        }
     }
     else if (lowerCommand.includes('hello') || lowerCommand.includes('hi')) {
         speak("Hello Sir. How may I assist you today?");

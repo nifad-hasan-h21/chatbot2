@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JARVIS - Advanced Virtual Assistant</title>
+    <link rel="shortcut icon" href="avatar.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@100;200;300;400;500;600;700&display=swap");
+        
+        :root {
+            --primary-color: #00bcd4;
+            --secondary-color: #9ba9ac;
+            --background-color: #000;
+            --card-bg: rgba(30, 30, 30, 0.8);
+            --success-color: #4CAF50;
+            --warning-color: #FFC107;
+            --error-color: #F44336;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Roboto Mono", monospace;
+        }
+        
+        body {
+            min-height: 100vh;
+            background: var(--background-color);
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--success-color);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .main-content {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+        }
+        
+        .assistant-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 10px;
+        }
+        
+        .image-container {
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .image-container .image img {
+            width: 300px;
+            border-radius: 10px;
+        }
+        
+        .image-container h1 {
+            color: var(--primary-color);
+            margin: 15px 0;
+            font-size: 40px;
+        }
+        
+        .image-container p {
+            color: var(--secondary-color);
+            margin-bottom: 30px;
+        }
+        
+        .input-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            margin-top: 20px;
+        }
+        
+        .input-box {
+            display: flex;
+            width: 100%;
+            height: 50px;
+            border-radius: 25px;
+            background: rgba(202, 253, 255, 0.2);
+            overflow: hidden;
+        }
+        
+        .talk-btn {
+            background: transparent;
+            border: none;
+            width: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .talk-btn:hover {
+            background: rgba(202, 253, 255, 0.1);
+        }
+        
+        .talk-btn i {
+            font-size: 20px;
+            color: var(--primary-color);
+        }
+        
+        .command-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 0 15px;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .command-history {
+            flex: 1;
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+        
+        .command-history h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .history-list {
+            list-style: none;
+        }
+        
+        .history-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-command {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .assistant-response {
+            color: var(--secondary-color);
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        
+        .commands-section {
+            margin-top: 30px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .commands-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        .command-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .command-category {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .command-category h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .command-list {
+            list-style: none;
+        }
+        
+        .command-list li {
+            padding: 5px 0;
+            color: var(--secondary-color);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .command-list li i {
+            margin-right: 8px;
+            color: var(--primary-color);
+            font-size: 12px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--secondary-color);
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        
+        .listening-animation {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .wave {
+            display: inline-block;
+            width: 4px;
+            height: 20px;
+            background: var(--primary-color);
+            margin: 0 2px;
+            border-radius: 2px;
+            animation: wave 1.2s infinite ease-in-out;
+        }
+        
+        .wave:nth-child(2) { animation-delay: 0.1s; }
+        .wave:nth-child(3) { animation-delay: 0.2s; }
+        .wave:nth-child(4) { animation-delay: 0.3s; }
+        .wave:nth-child(5) { animation-delay: 0.4s; }
+        
+        @keyframes wave {
+            0%, 40%, 100% { transform: scaleY(0.4); }
+            20% { transform: scaleY(1); }
+        }
+        
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100vh;
+            background: var(--card-bg);
+            padding: 20px;
+            transition: right 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .settings-panel.open {
+            right: 0;
+        }
+        
+        .settings-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1001;
+        }
+        
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .close-settings {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .setting-item {
+            margin-bottom: 15px;
+        }
+        
+        .setting-item label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--secondary-color);
+        }
+        
+        .setting-item select, .setting-item input {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .command-history {
+                max-height: 300px;
+            }
+            
+            .command-categories {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <h1>JARVIS <span style="color: var(--secondary-color);">v2.0</span></h1>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>Online</span>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="assistant-section">
+                <div class="image-container">
+                    <div class="image">
+                        <img src="https://i.gifer.com/7JpG.gif" alt="JARVIS Assistant">
+                    </div>
+                    <h1>J A R V I S</h1>
+                    <p>Advanced Virtual Assistant at your service, Sir.</p>
+                </div>
+                
+                <div class="input-container">
+                    <div class="input-box">
+                        <button class="talk-btn" id="talkBtn">
+                            <i class="fas fa-microphone-alt"></i>
+                        </button>
+                        <input type="text" class="command-input" id="commandInput" placeholder="Click microphone or type command...">
+                    </div>
+                </div>
+                
+                <div class="listening-animation" id="listeningAnimation">
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                    <p>Listening...</p>
+                </div>
+            </div>
+            
+            <div class="command-history">
+                <h2>Command History</h2>
+                <ul class="history-list" id="historyList">
+                    <li class="history-item">
+                        <span class="user-command">System: JARVIS initialized and ready</span>
+                        <span class="assistant-response">Welcome back, Sir. How may I assist you today?</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="commands-section">
+            <h2>Available Commands</h2>
+            <div class="command-categories">
+                <div class="command-category">
+                    <h3>Web Navigation</h3>
+                    <ul class="command-list">
+                        <li><i class="fas fa-chevron-right"></i> Open Google</li>
+                        <li><i class="fas fa-chevron-right"></i> Open YouTube</li>
+                        <li><i class="fas fa-chevron-right"></i> Open Facebook</li>
+                        <li><i class="fas fa-chevron-right"></i> Open Wikipedia</li>
+                        <li><i class="fas fa-chevron-right"></i> Search for [query]</li>
+                    </ul>
+                </div>
+                
+                <div class="command-category">
+                    <h3>System Controls</h3>
+                    <ul class="command-list">
+                        <li><i class="fas fa-chevron-right"></i> What time is it?</li>
+                        <li><i class="fas fa-chevron-right"></i> What's the date?</li>
+                        <li><i class="fas fa-chevron-right"></i> Open calculator</li>
+                        <li><i class="fas fa-chevron-right"></i> Clear history</li>
+                        <li><i class="fas fa-chevron-right"></i> Go to sleep</li>
+                    </ul>
+                </div>
+                
+                <div class="command-category">
+                    <h3>Entertainment</h3>
+                    <ul class="command-list">
+                        <li><i class="fas fa-chevron-right"></i> Play music</li>
+                        <li><i class="fas fa-chevron-right"></i> Tell me a joke</li>
+                        <li><i class="fas fa-chevron-right"></i> Weather forecast</li>
+                        <li><i class="fas fa-chevron-right"></i> News updates</li>
+                    </ul>
+                </div>
+                
+                <div class="command-category">
+                    <h3>Productivity</h3>
+                    <ul class="command-list">
+                        <li><i class="fas fa-chevron-right"></i> Create note</li>
+                        <li><i class="fas fa-chevron-right"></i> Set alarm</li>
+                        <li><i class="fas fa-chevron-right"></i> Set timer</li>
+                        <li><i class="fas fa-chevron-right"></i> Add to calendar</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>JARVIS Virtual Assistant &copy; 2023 | Advanced AI System</p>
+        </div>
+    </div>
+    
+    <div class="settings-toggle" id="settingsToggle">
+        <i class="fas fa-cog"></i>
+    </div>
+    
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-header">
+            <h3>Settings</h3>
+            <button class="close-settings" id="closeSettings">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="setting-item">
+            <label for="voiceSelect">Voice Preference</label>
+            <select id="voiceSelect">
+                <option value="default">Default Voice</option>
+            </select>
+        </div>
+        
+        <div class="setting-item">
+            <label for="speechRate">Speech Rate</label>
+            <input type="range" id="speechRate" min="0.5" max="2" step="0.1" value="1">
+            <span id="rateValue">1.0</span>
+        </div>
+        
+        <div class="setting-item">
+            <label for="speechPitch">Speech Pitch</label>
+            <input type="range" id="speechPitch" min="0.5" max="2" step="0.1" value="1">
+            <span id="pitchValue">1.0</span>
+        </div>
+        
+        <div class="setting-item">
+            <label for="autoListen">Auto Listen After Speech</label>
+            <input type="checkbox" id="autoListen" checked>
+        </div>
+        
+        <div class="setting-item">
+            <label for="saveHistory">Save Command History</label>
+            <input type="checkbox" id="saveHistory" checked>
+        </div>
+        
+        <div class="setting-item">
+            <button id="resetSettings" class="talk-btn" style="width: 100%; padding: 10px;">
+                Reset to Default Settings
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const talkBtn = document.getElementById('talkBtn');
+        const commandInput = document.getElementById('commandInput');
+        const listeningAnimation = document.getElementById('listeningAnimation');
+        const historyList = document.getElementById('historyList');
+        const settingsToggle = document.getElementById('settingsToggle');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const closeSettings = document.getElementById('closeSettings');
+        const speechRate = document.getElementById('speechRate');
+        const rateValue = document.getElementById('rateValue');
+        const speechPitch = document.getElementById('speechPitch');
+        const pitchValue = document.getElementById('pitchValue');
+        const autoListen = document.getElementById('autoListen');
+        const saveHistory = document.getElementById('saveHistory');
+        const resetSettings = document.getElementById('resetSettings');
+        const voiceSelect = document.getElementById('voiceSelect');
+
+        // App State
+        let isListening = false;
+        let lastSpokenText = "";
+        let speechSynthesis = window.speechSynthesis;
+        let recognition;
+        
+        // Initialize the app
+        function init() {
+            loadSettings();
+            setupSpeechRecognition();
+            setupSpeechSynthesis();
+            wishMe();
+            populateVoices();
+            
+            // Event listeners for UI elements
+            talkBtn.addEventListener('click', toggleListening);
+            commandInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleCommand(commandInput.value);
+                    commandInput.value = '';
+                }
+            });
+            
+            settingsToggle.addEventListener('click', () => {
+                settingsPanel.classList.add('open');
+            });
+            
+            closeSettings.addEventListener('click', () => {
+                settingsPanel.classList.remove('open');
+            });
+            
+            speechRate.addEventListener('input', () => {
+                rateValue.textContent = speechRate.value;
+                saveSettings();
+            });
+            
+            speechPitch.addEventListener('input', () => {
+                pitchValue.textContent = speechPitch.value;
+                saveSettings();
+            });
+            
+            autoListen.addEventListener('change', saveSettings);
+            saveHistory.addEventListener('change', saveSettings);
+            
+            resetSettings.addEventListener('click', () => {
+                localStorage.removeItem('jarvisSettings');
+                loadSettings();
+            });
+            
+            // Populate voices when they are loaded
+            speechSynthesis.onvoiceschanged = populateVoices;
+        }
+        
+        // Set up speech recognition
+        function setupSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                addToHistory('System', 'Speech recognition is not supported in this browser.');
+                speak('Speech recognition is not supported in this browser.');
+                talkBtn.disabled = true;
+                return;
+            }
+            
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+            
+            recognition.onstart = () => {
+                isListening = true;
+                talkBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                listeningAnimation.style.display = 'block';
+            };
+            
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript.trim().toLowerCase();
+                console.log('Heard:', transcript);
+                
+                // Ignore if it contains what assistant just said
+                if (lastSpokenText && transcript.includes(lastSpokenText)) {
+                    console.log("Ignored assistant's own voice.");
+                    recognition.stop();
+                    return;
+                }
+                
+                addToHistory('You', transcript);
+                handleCommand(transcript);
+            };
+            
+            recognition.onerror = (event) => {
+                console.error('Recognition error:', event.error);
+                addToHistory('System', 'Error: ' + event.error);
+                isListening = false;
+                talkBtn.innerHTML = '<i class="fas fa-microphone-alt"></i>';
+                listeningAnimation.style.display = 'none';
+            };
+            
+            recognition.onend = () => {
+                isListening = false;
+                talkBtn.innerHTML = '<i class="fas fa-microphone-alt"></i>';
+                listeningAnimation.style.display = 'none';
+            };
+        }
+        
+        // Set up speech synthesis
+        function setupSpeechSynthesis() {
+            if (!speechSynthesis) {
+                addToHistory('System', 'Speech synthesis is not supported in this browser.');
+                return;
+            }
+        }
+        
+        // Populate voice selection options
+        function populateVoices() {
+            if (!speechSynthesis) return;
+            
+            const voices = speechSynthesis.getVoices();
+            voiceSelect.innerHTML = '';
+            
+            voices.forEach(voice => {
+                const option = document.createElement('option');
+                option.value = voice.name;
+                option.textContent = `${voice.name} (${voice.lang})`;
+                if (voice.default) {
+                    option.selected = true;
+                }
+                voiceSelect.appendChild(option);
+            });
+            
+            voiceSelect.addEventListener('change', saveSettings);
+        }
+        
+        // Toggle listening state
+        function toggleListening() {
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+        
+        // Speak text
+        function speak(text) {
+            if (!speechSynthesis) return;
+            
+            // Cancel any previous speech
+            speechSynthesis.cancel();
+            lastSpokenText = text.toLowerCase();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            // Apply settings
+            utterance.rate = parseFloat(speechRate.value);
+            utterance.pitch = parseFloat(speechPitch.value);
+            utterance.volume = 1;
+            
+            // Set selected voice if available
+            const voices = speechSynthesis.getVoices();
+            const selectedVoice = voiceSelect.value;
+            if (selectedVoice !== 'default') {
+                const voice = voices.find(v => v.name === selectedVoice);
+                if (voice) {
+                    utterance.voice = voice;
+                }
+            }
+            
+            utterance.onend = () => {
+                if (autoListen.checked) {
+                    setTimeout(() => recognition.start(), 500);
+                }
+            };
+            
+            speechSynthesis.speak(utterance);
+        }
+        
+        // Add entry to command history
+        function addToHistory(speaker, message) {
+            const item = document.createElement('li');
+            item.className = 'history-item';
+            
+            const commandSpan = document.createElement('span');
+            commandSpan.className = 'user-command';
+            commandSpan.textContent = `${speaker}: ${message}`;
+            
+            item.appendChild(commandSpan);
+            
+            // Only add response element if it's a user command
+            if (speaker === 'You') {
+                const responseSpan = document.createElement('span');
+                responseSpan.className = 'assistant-response';
+                responseSpan.textContent = 'Processing...';
+                item.appendChild(responseSpan);
+                
+                // Store reference to update later
+                item.responseElement = responseSpan;
+            }
+            
+            historyList.appendChild(item);
+            historyList.scrollTop = historyList.scrollHeight;
+            
+            return item;
+        }
+        
+        // Update response in history
+        function updateHistoryResponse(item, response) {
+            if (item && item.responseElement) {
+                item.responseElement.textContent = response;
+            }
+        }
+        
+        // Greet user based on time of day
+        function wishMe() {
+            const hour = new Date().getHours();
+            let greeting;
+            
+            if (hour < 12) {
+                greeting = "Good morning, Sir.";
+            } else if (hour < 17) {
+                greeting = "Good afternoon, Sir.";
+            } else {
+                greeting = "Good evening, Sir.";
+            }
+            
+            addToHistory('JARVIS', greeting);
+            speak(greeting);
+        }
+        
+        // Handle voice/text commands
+        function handleCommand(message) {
+            if (!message) return;
+            
+            const historyItem = addToHistory('You', message);
+            let response = "I'm not sure how to help with that, Sir.";
+            
+            // Web navigation commands
+            if (message.includes('open google')) {
+                window.open('https://google.com', '_blank');
+                response = "Opening Google, Sir.";
+            } 
+            else if (message.includes('open youtube')) {
+                window.open('https://youtube.com', '_blank');
+                response = "Opening YouTube, Sir.";
+            } 
+            else if (message.includes('open facebook')) {
+                window.open('https://facebook.com', '_blank');
+                response = "Opening Facebook, Sir.";
+            } 
+            else if (message.includes('open wikipedia')) {
+                const query = message.replace('open wikipedia', '').replace('for', '').trim();
+                const url = query ? `https://en.wikipedia.org/wiki/${encodeURIComponent(query)}` : 'https://en.wikipedia.org';
+                window.open(url, '_blank');
+                response = query ? `Opening Wikipedia for ${query}, Sir.` : "Opening Wikipedia, Sir.";
+            } 
+            else if (message.startsWith('search for ') || message.startsWith('search ')) {
+                const query = message.replace('search for ', '').replace('search ', '').trim();
+                if (query) {
+                    window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+                    response = `Searching for ${query}, Sir.`;
+                } else {
+                    response = "What would you like me to search for, Sir?";
+                }
+            }
+            
+            // System commands
+            else if (message.includes('time')) {
+                const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                response = `The time is ${time}, Sir.`;
+            } 
+            else if (message.includes('date')) {
+                const date = new Date().toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' });
+                response = `Today is ${date}, Sir.`;
+            } 
+            else if (message.includes('calculator')) {
+                window.open('Calculator:///', '_blank');
+                response = "Opening calculator, Sir.";
+            } 
+            else if (message.includes('clear history')) {
+                historyList.innerHTML = '';
+                const systemItem = document.createElement('li');
+                systemItem.className = 'history-item';
+                systemItem.innerHTML = '<span class="user-command">System: History cleared</span>';
+                historyList.appendChild(systemItem);
+                response = "History cleared, Sir.";
+            } 
+            else if (message.includes('go to sleep') || message.includes('sleep')) {
+                response = "Going to sleep. Say 'Wake up' when you need me, Sir.";
+                speak(response);
+                updateHistoryResponse(historyItem, response);
+                return;
+            }
+            else if (message.includes('wake up')) {
+                response = "I'm awake and ready, Sir.";
+            }
+            
+            // Entertainment commands
+            else if (message.includes('play music')) {
+                window.open('https://open.spotify.com/', '_blank');
+                response = "Opening Spotify, Sir.";
+            } 
+            else if (message.includes('tell me a joke')) {
+                const jokes = [
+                    "Why don't scientists trust atoms? Because they make up everything!",
+                    "Why did the scarecrow win an award? Because he was outstanding in his field!",
+                    "What do you call a fake noodle? An impasta!",
+                    "How does a penguin build its house? Igloos it together!",
+                    "Why did the math book look so sad? Because it had too many problems!"
+                ];
+                const randomJoke = jokes[Math.floor(Math.random() * jokes.length)];
+                response = randomJoke;
+            } 
+            else if (message.includes('weather')) {
+                window.open('https://www.google.com/search?q=weather', '_blank');
+                response = "Showing weather information, Sir.";
+            } 
+            else if (message.includes('news')) {
+                window.open('https://news.google.com/', '_blank');
+                response = "Showing latest news, Sir.";
+            }
+            
+            // Productivity commands
+            else if (message.includes('create note') || message.includes('take a note')) {
+                const noteText = message.replace('create note', '').replace('take a note', '').trim();
+                if (noteText) {
+                    localStorage.setItem('jarvisNote', noteText);
+                    response = `Note saved: "${noteText}"`;
+                } else {
+                    response = "What would you like me to note down, Sir?";
+                }
+            } 
+            else if (message.includes('read my note')) {
+                const note = localStorage.getItem('jarvisNote');
+                response = note ? `Your note says: "${note}"` : "You don't have any saved notes, Sir.";
+            }
+            else if (message.includes('set alarm')) {
+                response = "Alarm feature is coming soon, Sir.";
+            }
+            else if (message.includes('set timer')) {
+                response = "Timer feature is coming soon, Sir.";
+            }
+            
+            // Default: Search the web
+            else {
+                window.open(`https://www.google.com/search?q=${encodeURIComponent(message)}`, '_blank');
+                response = `Searching for "${message}", Sir.`;
+            }
+            
+            updateHistoryResponse(historyItem, response);
+            speak(response);
+        }
+        
+        // Load settings from localStorage
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('jarvisSettings')) || {};
+            
+            speechRate.value = settings.speechRate || 1;
+            rateValue.textContent = speechRate.value;
+            
+            speechPitch.value = settings.speechPitch || 1;
+            pitchValue.textContent = speechPitch.value;
+            
+            autoListen.checked = settings.autoListen !== undefined ? settings.autoListen : true;
+            saveHistory.checked = settings.saveHistory !== undefined ? settings.saveHistory : true;
+            
+            if (settings.voice) {
+                voiceSelect.value = settings.voice;
+            }
+        }
+        
+        // Save settings to localStorage
+        function saveSettings() {
+            const settings = {
+                speechRate: parseFloat(speechRate.value),
+                speechPitch: parseFloat(speechPitch.value),
+                autoListen: autoListen.checked,
+                saveHistory: saveHistory.checked,
+                voice: voiceSelect.value
+            };
+            
+            localStorage.setItem('jarvisSettings', JSON.stringify(settings));
+        }
+        
+        // Initialize the app when the window loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+
+</html>

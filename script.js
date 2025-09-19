@@ -1,5 +1,5 @@
-// script.js - JARVIS Virtual Assistant
-console.log('JARVIS script loaded successfully');
+// script.js - NIFAD Virtual Assistant
+console.log('NIFAD script loaded successfully');
 
 // DOM Elements
 const talkBtn = document.getElementById('talkBtn');
@@ -24,7 +24,7 @@ let isListening = false;
 let lastSpokenText = "";
 let speechSynthesis = window.speechSynthesis;
 let recognition;
-let activationKeyword = "hey jarvis";
+let activationKeyword = "hey nifad";
 let isAwake = false;
 let isMicrophoneBlocked = false;
 
@@ -33,7 +33,7 @@ let pendingCommand = null;
 
 // Initialize the app
 function init() {
-    console.log('Initializing JARVIS...');
+    console.log('Initializing NIFAD...');
     loadSettings();
     setupSpeechRecognition();
     setupSpeechSynthesis();
@@ -73,7 +73,7 @@ function init() {
     saveHistory.addEventListener('change', saveSettings);
     
     resetSettings.addEventListener('click', () => {
-        localStorage.removeItem('jarvisSettings');
+        localStorage.removeItem('nifadSettings');
         loadSettings();
         speak("Settings restored to default values.");
     });
@@ -85,10 +85,11 @@ function init() {
     
     // Initial greeting
     setTimeout(() => {
-        addToHistory('SYSTEM', 'J.A.R.V.I.S. INITIALIZED');
+        addToHistory('SYSTEM', 'N.I.F.A.D. INITIALIZED');
         speak("All systems operational. Ready for your command, Sir.");
     }, 1000);
 }
+
 
 // Update date and time in HUD
 function updateDateTime() {
@@ -506,5 +507,3 @@ window.addEventListener('click', function() {
         }
     }
 });
-
-

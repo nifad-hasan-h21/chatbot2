@@ -155,14 +155,6 @@ function setupSpeechRecognition() {
                 handleCommand(transcript);
             }
         }
-        
-        // stop recognition while JARVIS speaks to avoid capturing its own voice
-        try {
-            recognition.stop();
-        } catch (e) {
-            // ignore
-        }
-    };
     
     recognition.onend = () => {
         isListening = false;
@@ -513,3 +505,4 @@ window.addEventListener('click', function() {
         }
     }
 });
+

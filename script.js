@@ -155,6 +155,7 @@ function setupSpeechRecognition() {
                 handleCommand(transcript);
             }
         }
+    };
     
     recognition.onend = () => {
         isListening = false;
@@ -505,4 +506,5 @@ window.addEventListener('click', function() {
         }
     }
 });
+
 
